@@ -20,8 +20,14 @@ while True:
         print("Error: Can't receive frame (stream end?). Exiting...")
         break
     
-    # Display the resulting frame
+    # Convert the frame from BGR to HSV
+    hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    
+    # Display the original frame
     cv2.imshow('Webcam Feed', frame)
+    
+    # Display the HSV frame || not really needed but cool to see what Hue, Saturation and Value the camera picks up
+    # cv2.imshow('HSV Feed', hsv_frame)
     
     # Break the loop on 'q' key press
     if cv2.waitKey(1) & 0xFF == ord('q'):
