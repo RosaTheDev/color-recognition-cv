@@ -1,3 +1,4 @@
+from unittest.mock import patch
 import cv2
 import numpy as np
 import pytest
@@ -8,8 +9,15 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from main import start_webcam, convert_to_hsv, detect_color
 
 def test_start_webcam():
-     cap = start_webcam()
-     assert cap.isOpened, "Webcam failed to start."
+    with patch('cv2.VideoCapture') as mock_video_capture:
+        mock_video_capture.return_value.isOpened.return_value = True
+        cap = start_webcam()
+        assert cap.isOpened(), "Webcam failed to start."
+
+    with patch('cv2.VideoCapture') as mock_video_capture:
+        mock_video_capture.return_value.isOpened.return_value = False
+        with pytest.raises(SystemExit):
+            start_webcam()
      
 def test_convert_to_hsv():
    # Create a dummy BGR image (a simple 2x2 image with blue color)
