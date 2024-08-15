@@ -1,26 +1,31 @@
-import cv2
-import numpy as np
-import pytest
 import sys # Import the sys module
 import os # Import the os module
+import cv2
+import numpy as np
+from unittest.mock import patch
+import pytest
+
 # Add the parent directory (where main.py is located) to the Python path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from main import start_webcam, convert_to_hsv, detect_color
 
-def test_start_webcam():
+@patch('cv2.VideoCapture')
+def test_start_webcam(mock_video_capture):
+     mock_video_capture.return_value.isOpened.return_value = True
      cap = start_webcam()
-     assert cap.isOpened, "Webcam failed to start."
+     assert cap.isOpened(), "Webcam failed to start."
      
+     mock_video_capture.return_value.isOpened.return_value = False
+     with pytest.raises(SystemExit):
+        start_webcam()
+
 def test_convert_to_hsv():
    # Create a dummy BGR image (a simple 2x2 image with blue color)
     bgr_image = np.array([[[255, 0, 0], [255, 0, 0]], [[255, 0, 0], [255, 0, 0]]], dtype=np.uint8)
-
     # Convert the BGR image to HSV
     hsv_image = convert_to_hsv(bgr_image)
-
     # Expected HSV value for pure blue
     expected_hsv = np.array([[[120, 255, 255], [120, 255, 255]], [[120, 255, 255], [120, 255, 255]]], dtype=np.uint8)
-
     assert np.array_equal(hsv_image, expected_hsv), "HSV conversion failed."
     
 def test_detect_color():
