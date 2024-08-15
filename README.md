@@ -61,4 +61,10 @@ This is my first time setting up my own CI/CD pipelines, so bare with me if you 
 - First issue that I ran into was that the ```requirements.txt``` file was not being recognized
 - Second issue was that the pipelines ran into an issue with starting up the webcam, probably because the pipeline itself doesnt have access to a proper webcam on the computer since the pipeline is hosted on github, this issue was fixed by mocking the webcam in the CI enviornment
 
+## Further Optimzation
+- Trying to test how much more optimized I could get with using Chat GPT 4o, so far we had manage to add more mocking for the webcam testing.
+- We moved our imshow functions into a helper function, this really cleaned up the code a bit more.
+- Learned that apparently these -> ```""" """``` are called **Docstrings** and these are used to describe what a function, class or module does, they also can be accessed using tools like Pythons built-in "help()" function or through code introspection, meanwhile (I was previously using these) ```#``` are used for regular comments to eplain specific lines or blocks of code. (basically use the Docstrings for the helper functions and use the use comments for the blocks inside of the main function
+- Resizing the frames, we resized the frames to be on a smaller scale then they were originally, this reduces the data being processed leading to faster execution, I personally didn't notice a change in resoultion when implmented, but I did notice that it is much faster to close the frames pressing ```Q``` now Chat GPT  4o mentions that the faster quit time inidicates that the program is handling the frames more efficently so I think we are on the right track.
+
 
