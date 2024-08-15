@@ -4,6 +4,8 @@ import cv2
 import numpy as np
 from unittest.mock import patch
 import pytest
+import queue
+import threading
 
 # Add the parent directory (where main.py is located) to the Python path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -11,15 +13,37 @@ from main import start_webcam, convert_to_hsv, detect_color, draw_bounding_box
 
 @patch('cv2.VideoCapture')
 def test_start_webcam(mock_video_capture):
-    # Test when the webcam starts successfully
+    # Setup the mocks
     mock_video_capture.return_value.isOpened.return_value = True
-    cap = start_webcam()
-    assert cap.isOpened(), "Webcam failed to start."
+    mock_video_capture.return_value.read.return_value = (True, np.zeros((480, 640, 3), dtype=np.uint8))  # Mock frame
+    
+    # Create the necessary arguments
+    frame_queue = queue.Queue(maxsize=10)
+    stop_event = threading.Event()
+    
+    # Call the function with the necessary arguments
+    capture_thread = threading.Thread(target=start_webcam, args=(frame_queue, stop_event))
+    capture_thread.start()
+    
+    # Start the thread and give it a slight delay to ensure it begins execution
+    capture_thread.join(timeout=0.1)
+    
+    # Let the thread run for a short time and then stop it
+    stop_event.set()
+    capture_thread.join(timeout=1)  # Ensure the thread joins within 1 second
+    
+    # Ensure the webcam started successfully
+    assert not frame_queue.empty(), "Frame queue should not be empty"
+
+    # Ensure the first frame is a valid numpy array
+    frame = frame_queue.get()
+    assert isinstance(frame, np.ndarray), "Captured frame should be a numpy array"
+    assert frame.shape == (480, 640, 3), "Captured frame should have the correct dimensions"
     
     # Test wehen the webcam fails to start (mock failure)
     mock_video_capture.return_value.isOpened.return_value = False
     with pytest.raises(SystemExit):
-        start_webcam()
+        start_webcam(frame_queue, stop_event)
 
 def test_convert_to_hsv():
     # Create a dummy BGR image (a simple 2x2 image with blue color)
@@ -66,8 +90,6 @@ def test_draw_bounding_box():
     # The function does not return anything, so we can only verify that it runs without error
     assert bgr_image is not None, "Bounding box drawing failed."
 
-    
-    # Draw the bounding box
 # If running directly, execute pytest
 if __name__ == "__main__":
     pytest.main()

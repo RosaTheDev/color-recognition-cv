@@ -7,10 +7,15 @@ from concurrent.futures import ThreadPoolExecutor
 # Function to capture frames from the webcam
 def start_webcam(frame_queue, stop_event):
     cap = cv2.VideoCapture(0)
+    if not cap.isOpened():
+        print("Error: Could not open webcam.")
+        exit()
+    
     while not stop_event.is_set():
         ret, frame = cap.read()
         if not ret:
-            break
+            print("Error: could not read frame from webcam.")
+            continue
         frame_queue.put(frame)
     cap.release()
 
