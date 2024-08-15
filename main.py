@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import threading
 import queue
+from concurrent.futures import ThreadPoolExecutor
 
 # Function to capture frames from the webcam
 def start_webcam(frame_queue, stop_event):
@@ -50,27 +51,24 @@ def main():
     processed_queue = queue.Queue(maxsize=10)
     stop_event = threading.Event()
 
-    # Start threads for capturing and processing frames
-    capture_thread = threading.Thread(target=start_webcam, args=(frame_queue, stop_event))
-    processing_thread = threading.Thread(target=process_frame, args=(frame_queue, processed_queue, stop_event))
-    capture_thread.start()
-    processing_thread.start()
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        # Start capture and processing threads
+        executor.submit(start_webcam, frame_queue, stop_event)
+        executor.submit(process_frame, frame_queue, processed_queue, stop_event)
 
-    try:
-        while True:
-            if not processed_queue.empty():
-                frame = processed_queue.get()
-                cv2.imshow('Webcam Feed', frame)  # Display the original frame with bounding box
+        try:
+            while True:
+                if not processed_queue.empty():
+                    frame = processed_queue.get()
+                    cv2.imshow('Webcam Feed', frame)  # Display the original frame with bounding box
 
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                stop_event.set()
-                break
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    stop_event.set()
+                    break
 
-    finally:
-        stop_event.set()
-        capture_thread.join()
-        processing_thread.join()
-        cv2.destroyAllWindows()
+        finally:
+            stop_event.set()
+            cv2.destroyAllWindows()
 
 if __name__ == "__main__":
     main()
