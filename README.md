@@ -67,5 +67,16 @@ This is my first time setting up my own CI/CD pipelines, so bare with me if you 
 - Learned that apparently these -> ```""" """``` are called **Docstrings** and these are used to describe what a function, class or module does, they also can be accessed using tools like Pythons built-in "help()" function or through code introspection, meanwhile (I was previously using these) ```#``` are used for regular comments to eplain specific lines or blocks of code. (basically use the Docstrings for the helper functions and use the use comments for the blocks inside of the main function
 - Resizing the frames, we resized the frames to be on a smaller scale then they were originally, this reduces the data being processed leading to faster execution, I personally didn't notice a change in resoultion when implmented, but I did notice that it is much faster to close the frames pressing ```Q``` now Chat GPT  4o mentions that the faster quit time inidicates that the program is handling the frames more efficently so I think we are on the right track.
 - Added a red bounding box when the color is detected, also removed the the second mask where the screen was black but only detected the blue color
+  ### MultiThreading
+  - Started to play around with multithreading, this allows each task to be handled simultaneously (i.e. capturing video frames, processing those frames, and displaying them at then same time)
+  - in our ```main``` function we have two threads. A ```Capture thread```, and a ```Processing thread```
+  #### Capture thread
+   - This thread catures frames from the webcam, each captured frame is put fourth for further processing by the processing thread
+  #### Processing thread
+    - This thread processes the frames reveived from the Capture thread, it converts the frams to HSV, detects the specific color, draws the bounding boxes, then puts the frames in a queue
+  #### Queue Mechanism
+   - The ```frame_queue``` is used to pass frames from the ```Capture thread``` to the ```Processing thread```
+   - The ```processed_queue``` is used to pass processed frames from the ```Processing thread``` to the main thread for display
+     
 
 
