@@ -23,6 +23,19 @@ def detect_color(frame, hsv_frame, lower_bound, upper_bound):
 def display_frames(original_frame, processed_frame):
     cv2.imshow('Webcam Feed', original_frame)
     cv2.imshow('Blue Detection', processed_frame)
+    
+def resize_frame(frame, scale = 0.5):
+    """
+    Resize the frame to a smaller scale.
+    :param frame: Original frame from the webcam.
+    :param scale: Scaling factor for resizing (default is 0.5, i.e., reduce to half size).
+    :return: Resized frame.
+    """
+    width = int(frame.shape[1] * scale)
+    height = int(frame.shape[0] * scale)
+    dimensions = (width, height)
+    
+    return cv2.resize(frame, dimensions, interpolation=cv2.INTER_AREA)
 
 def main():
     # Start the webcam
@@ -38,6 +51,9 @@ def main():
         if not ret:
             print("Error: Can't receive frame (stream end?). Exiting...")
             break
+        
+        # Capture frame-by-frame
+        frame = resize_frame(frame, scale=0.5)
         
         # Convert the frame from BGR to HSV
         hsv_frame = convert_to_hsv(frame)
