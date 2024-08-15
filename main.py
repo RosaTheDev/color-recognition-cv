@@ -40,8 +40,6 @@ def main():
         # Detect the blue color
         blue_only = detect_color(frame, hsv_frame, lower_blue, upper_blue)
         
-        # Display the blue color
-        cv2.imshow('Webcam Feed', frame)
         
         # Display the original frame
         cv2.imshow('Webcam Feed', frame)
