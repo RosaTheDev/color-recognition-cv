@@ -10,14 +10,19 @@ def start_webcam():
         exit()
     return cap
 
- # Convert a BGR frame to HSV color space.
+# Convert a BGR frame to HSV color space.
 def convert_to_hsv(frame):
     return cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-    # Create a mask and detect a specific color in the frame 
+# Create a mask and detect a specific color in the frame 
 def detect_color(frame, hsv_frame, lower_bound, upper_bound):
-   mask = cv2.inRange(hsv_frame, lower_bound, upper_bound)
-   return cv2.bitwise_and(frame, frame, mask=mask)
+    mask = cv2.inRange(hsv_frame, lower_bound, upper_bound)
+    return cv2.bitwise_and(frame, frame, mask=mask)
+
+# Display the original and processed frames
+def display_frames(original_frame, processed_frame):
+    cv2.imshow('Webcam Feed', original_frame)
+    cv2.imshow('Blue Detection', processed_frame)
 
 def main():
     # Start the webcam
@@ -40,12 +45,7 @@ def main():
         # Detect the blue color
         blue_only = detect_color(frame, hsv_frame, lower_blue, upper_blue)
         
-        
-        # Display the original frame
-        cv2.imshow('Webcam Feed', frame)
-        
-        # Display the blue-detected frame
-        cv2.imshow('Blue Detection', blue_only)
+        display_frames(frame, blue_only)
         
         # Break the loop on 'q' key press
         if cv2.waitKey(1) & 0xFF == ord('q'):
