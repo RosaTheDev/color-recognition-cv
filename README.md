@@ -24,3 +24,59 @@ Before you begin, ensure you have met the following requirements:
    ```bash
    git clone https://github.com/your-username/color-recognition-cv.git
    cd color-recognition-cv
+
+2. **Install opencv-python**:
+   ```bash
+   pip install opencv-python
+
+3. **Install pytest for testing**
+   ```bash
+   pip install pytest
+
+
+## Findings, What I Learned
+### Startup Findings
+- Started with getting the webcam to start up, this is done with ``` cv2.VideoCapture(0)``` the reason that we use 0 as the parameter here is because it is the default webcam
+- The reason we are using the HSV (Hue, Saturation, and Value) color space is because it is more effective for color detection than the RGB color space. This makes it easier to detect specific colors under different lighting conditions
+
+### Testing Findings
+- Seting up testing for this was interesting I've never used pytest before but also how would one even test a camera detecting colors? Here I hope to break it down to some of the issues I ran into
+- Importing the ```'main'``` module, solved by importing sys and importing os which allowed the test file to find the 'main.py' file: 
+```bash
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+```
+- Typo, when we are using image processing we use ```numpy or np```, ```uint8```, but it can be confused for unit so I make the mistake of type ```unit8``` instead
+- Array nesting it can be confusing dealing with nested arrays, and keeping track of where the values are, its been fixed it should look like this: 
+```
+bgr_image = np.array([
+    [[255, 0, 0], [255, 0, 0]], 
+    [[255, 0, 0], [255, 0, 0]]
+], dtype=np.uint8)
+```
+
+### CI/CD Pipelines
+This is my first time setting up my own CI/CD pipelines, so bare with me if you view initially there was a lot ran, let me go into detail of what I achieved:
+- First issue that I ran into was that the ```requirements.txt``` file was not being recognized
+- Second issue was that the pipelines ran into an issue with starting up the webcam, probably because the pipeline itself doesnt have access to a proper webcam on the computer since the pipeline is hosted on github, this issue was fixed by mocking the webcam in the CI enviornment
+
+## Further Optimzation
+- Trying to test how much more optimized I could get with using Chat GPT 4o, so far we had manage to add more mocking for the webcam testing.
+- We moved our imshow functions into a helper function, this really cleaned up the code a bit more.
+- Learned that apparently these -> ```""" """``` are called **Docstrings** and these are used to describe what a function, class or module does, they also can be accessed using tools like Pythons built-in "help()" function or through code introspection, meanwhile (I was previously using these) ```#``` are used for regular comments to eplain specific lines or blocks of code. (basically use the Docstrings for the helper functions and use the use comments for the blocks inside of the main function
+- Resizing the frames, we resized the frames to be on a smaller scale then they were originally, this reduces the data being processed leading to faster execution, I personally didn't notice a change in resoultion when implmented, but I did notice that it is much faster to close the frames pressing ```Q``` now Chat GPT  4o mentions that the faster quit time inidicates that the program is handling the frames more efficently so I think we are on the right track.
+- Added a red bounding box when the color is detected, also removed the the second mask where the screen was black but only detected the blue color
+  ### MultiThreading
+  - Started to play around with multithreading, this allows each task to be handled simultaneously (i.e. capturing video frames, processing those frames, and displaying them at then same time)
+  - in our ```main``` function we have two threads. A ```Capture thread```, and a ```Processing thread```
+  #### Capture thread
+   - This thread catures frames from the webcam, each captured frame is put fourth for further processing by the processing thread
+  #### Processing thread
+    - This thread processes the frames reveived from the Capture thread, it converts the frams to HSV, detects the specific color, draws the bounding boxes, then puts the frames in a queue
+  #### Queue Mechanism
+   - The ```frame_queue``` is used to pass frames from the ```Capture thread``` to the ```Processing thread```
+   - The ```processed_queue``` is used to pass processed frames from the ```Processing thread``` to the main thread for display
+     
+
+
