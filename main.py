@@ -7,20 +7,28 @@ from concurrent.futures import ThreadPoolExecutor
 # Define the HSV ranges for different colors (global definition)
 colors = {
     'blue': (np.array([100, 150, 150]), np.array([130, 255, 255])),
+    'light_blue': (np.array([90, 50, 70]), np.array([130, 255, 255])),  # Covers lighter to regular blue
+    'deep_blue': (np.array([110, 150, 50]), np.array([130, 255, 255])),  # Covers deeper shades of blue
     'red1': (np.array([0, 160, 160]), np.array([10, 255, 255])),    # Lower boundary for red
     'red2': (np.array([170, 160, 160]), np.array([180, 255, 255])),  # Upper boundary for red
-    'green': (np.array([50, 150, 150]), np.array([70, 255, 255])),
+    'light_green': (np.array([35, 50, 50]), np.array([85, 255, 255])),  # Covers lighter to regular green
+    'deep_green': (np.array([35, 100, 50]), np.array([85, 255, 150])),  # Covers deeper shades of green
 }
 
 
 def start_webcam(frame_queue, stop_event):
     cap = cv2.VideoCapture(0)
-    while not stop_event.is_set():
-        ret, frame = cap.read()
-        if not ret:
-            break
-        frame_queue.put(frame)
-    cap.release()
+    if not cap.isOpened():
+        print("Error: Could not open webcam.")
+        raise SystemExit(1)
+    try:
+        while not stop_event.is_set():
+            ret, frame = cap.read()
+            if not ret:
+                break
+            frame_queue.put(frame)
+    finally:
+        cap.release()  # Ensure the camera is released when the loop exits
 
 def process_frame(frame_queue, processed_queue, stop_event):
     while not stop_event.is_set():
@@ -40,19 +48,34 @@ def process_frame(frame_queue, processed_queue, stop_event):
             draw_bounding_box(frame, red_mask)
             cv2.putText(frame, 'red', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
             
-            # Detect blue
-            _, blue_mask = detect_color(frame, hsv_frame, colors['blue'][0], colors['blue'][1])
-            blue_mask = cv2.erode(blue_mask, None, iterations=2)
-            blue_mask = cv2.dilate(blue_mask, None, iterations=2)
+            # Detect light blue
+            _, light_blue_mask = detect_color(frame, hsv_frame, colors['light_blue'][0], colors['light_blue'][1])
+            light_blue_mask = cv2.erode(light_blue_mask, None, iterations=2)
+            light_blue_mask = cv2.dilate(light_blue_mask, None, iterations=2)
+            
+            # Detect deep blue
+            _, deep_blue_mask = detect_color(frame, hsv_frame, colors['deep_blue'][0], colors['deep_blue'][1])
+            deep_blue_mask = cv2.erode(deep_blue_mask, None, iterations=2)
+            deep_blue_mask = cv2.dilate(deep_blue_mask, None, iterations=2)
 
+            # Combine masks for all shades of blue
+            blue_mask = cv2.bitwise_or(light_blue_mask, deep_blue_mask)
             draw_bounding_box(frame, blue_mask)
             cv2.putText(frame, 'blue', (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-            
-            # Detect green
-            _, green_mask = detect_color(frame, hsv_frame, colors['green'][0], colors['green'][1])
-            green_mask = cv2.erode(green_mask, None, iterations=2)
-            green_mask = cv2.dilate(green_mask, None, iterations=2)
 
+            
+            # Detect light green
+            _, light_green_mask = detect_color(frame, hsv_frame, colors['light_green'][0], colors['light_green'][1])
+            light_green_mask = cv2.erode(light_green_mask, None, iterations=2)
+            light_green_mask = cv2.dilate(light_green_mask, None, iterations=2)
+            
+            # Detect deep green
+            _, deep_green_mask = detect_color(frame, hsv_frame, colors['deep_green'][0], colors['deep_green'][1])
+            deep_green_mask = cv2.erode(deep_green_mask, None, iterations=2)
+            deep_green_mask = cv2.dilate(deep_green_mask, None, iterations=2)
+
+            # Combine masks for all shades of green
+            green_mask = cv2.bitwise_or(light_green_mask, deep_green_mask)
             draw_bounding_box(frame, green_mask)
             cv2.putText(frame, 'green', (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
             
