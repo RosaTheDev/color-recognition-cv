@@ -28,8 +28,25 @@ Before you begin, ensure you have met the following requirements:
 2. **Install opencv-python**:
    ```bash
    pip install opencv-python
+   
+3. Note: if you are getting errors trying to run the second step try to set up a virtual enviornment:
+   
+  Create a virtual environment:
+  ```bash 
+    python3.x -m venv venv  # Replace x with the version of Python you want to use
 
-3. **Install pytest for testing**
+
+  Activate the virtual environment:
+    On macOS/Linux:
+    
+      source venv/bin/activate
+    
+    On Windows:
+    
+      venv\Scripts\activate
+  ```
+
+4. **Install pytest for testing**
    ```bash
    pip install pytest
 
